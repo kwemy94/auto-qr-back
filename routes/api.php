@@ -10,12 +10,14 @@ Route::prefix('auth')->name('auth.')->group(function () {
     Route::middleware('auth:api')->group(function(){
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
         Route::get('user', [AuthController::class, 'user'])->name('user');
+        Route::post('change-password', [AuthController::class, 'changePassword'])->name('change-password');
 
     });
 });
 
 Route::middleware('auth:api')->group(function () {
-    Route::patch('/profile', [AuthController::class, 'updateProfile'])->name('user.update.profile');
-    /* some problem with put or patch request > to verify */
+    Route::post('/profile', [AuthController::class, 'updateProfile'])->name('user.update.profile');
+
+    /* some problem with put or patch request > to use it, you should add _method=PATCH|PUSH in request url */
 
 });

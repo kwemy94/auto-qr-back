@@ -8,6 +8,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\UpdateProfileRequest;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -55,12 +56,11 @@ class AuthController extends Controller
         return response()->json(compact('user'));
     }
 
-    public function updateProfile(UpdateProfileRequest $request)
+    public function updateProfile(Request $request)
     {
         $user = JWTAuth::user();
 
         $user->fill($request->only(['name', 'email', 'phone']))->save();
-
         return response()->json([
             'message' => 'Profile updated successfully.',
             'user'    => $user,

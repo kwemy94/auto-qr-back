@@ -25,7 +25,7 @@ class UpdateProfileRequest extends FormRequest
         $user = JWTAuth::user();
         
         return [
-            'name'  => 'required|string|max:30',
+            'name'  => 'sometimes|string|max:30',
             'email' => 'sometimes|email|unique:users,email,' . $user->id,
             'phone' => 'sometimes|regex:/^[0-9]{8,15}$/|unique:users,phone,' . $user->id,
         ];
