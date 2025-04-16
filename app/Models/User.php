@@ -35,6 +35,15 @@ class User extends Authenticatable implements JWTSubject
         'remember_token',
     ];
 
+    protected static function booted()
+    {
+        static::creating(function ($user){
+            if(!$user->end_trial_period){
+                $user->end_trial_period = now()->addDays(30);
+            }
+        });
+    }
+
     /**
      * Get the attributes that should be cast.
      *
@@ -56,5 +65,15 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims()
     {
         return [];
+    }
+
+    public function message_senders(){
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+    public function message_receivers(){
+        return $this->hasMany(Message::class, 'receiver_id');
+    }
+    public function subscriptions(){
+        return $this->hasMany(Subscription::class);
     }
 }

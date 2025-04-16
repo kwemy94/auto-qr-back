@@ -16,8 +16,15 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->nullable()->unique();
             $table->string('phone')->nullable()->unique();
-            $table->timestamp('email_verified_at')->nullable();
+            $table->string('gender')->nullable();
+            $table->string('avatar')->nullable();
+            $table->string('qr_code')->unique();
+            $table->string('qr_code_raw')->unique();
+            $table->date('birthday')->nullable();
+            $table->date('end_trial_period');
             $table->string('password');
+            $table->tinyInteger('role')->default(3)->comment("1 => super-admin, 2=>admin, 3=>user-simple");
+            $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
