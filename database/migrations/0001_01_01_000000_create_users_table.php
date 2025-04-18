@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('gender')->nullable();
             $table->string('avatar')->nullable();
             $table->string('qr_code')->unique();
-            $table->string('qr_code_raw')->unique();
             $table->date('birthday')->nullable();
             $table->date('end_trial_period');
             $table->string('password');

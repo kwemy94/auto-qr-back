@@ -3,10 +3,11 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Support\Str;
+use Tymon\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -41,6 +42,7 @@ class User extends Authenticatable implements JWTSubject
             if(!$user->end_trial_period){
                 $user->end_trial_period = now()->addDays(30);
             }
+            $user->qr_code = self::generateUniqueQR();
         });
     }
 
@@ -75,5 +77,14 @@ class User extends Authenticatable implements JWTSubject
     }
     public function subscriptions(){
         return $this->hasMany(Subscription::class);
+    }
+
+    public static function generateUniqueQR(){
+        do{
+            $random = strtoupper(Str::random(10));
+            $code = "US.QR-$random";
+        }while(self::where('qr_code', $code)->exists());
+
+        return $code;
     }
 }
