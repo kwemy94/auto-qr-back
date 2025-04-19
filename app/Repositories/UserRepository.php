@@ -23,7 +23,7 @@ class UserRepository extends ResourceRepository
 
     public function subscribe(Package $package, $userId)
     {
-        return $this->model->where('id', $userId)->first()->subscriptions()->sync(
+        return $this->model->where('id', $userId)->first()->subscriptions()->attach(
             [
                 $package->id => [
                     'start_date' => Carbon::now()->toDateTime(),

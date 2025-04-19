@@ -7,6 +7,8 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Facades\Storage;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -41,7 +43,10 @@ class User extends Authenticatable implements JWTSubject
             if (!$user->end_trial_period) {
                 $user->end_trial_period = now()->addDays(30);
             }
-            $user->qr_code = self::generateUniqueQR();
+        });
+
+        static::created(function ($user) {
+            self::generateUniqueQR($user);
         });
     }
 
@@ -83,13 +88,23 @@ class User extends Authenticatable implements JWTSubject
             ->withTimestamps();
     }
 
-    public static function generateUniqueQR()
+    public static function generateUniqueQR(User $user)
     {
-        do {
-            $random = strtoupper(Str::random(10));
-            $code = "US.QR-$random";
-        } while (self::where('qr_code', $code)->exists());
+        if (!empty($user->qr_path) && Storage::exists($user->qr_path)) {
+            Storage::delete($user->qr_path);
+        }
 
-        return $code;
+        $uuid = $user->id . Str::uuid();
+
+        $uniqueQRData = "US.QR-" . $uuid;
+        $user->qr_code = $uniqueQRData;
+
+        $qrImage = QrCode::size(300)->generate($uniqueQRData);
+        $qrImageFile = "qrcodes/$uuid.png";
+
+        Storage::disk('public')->put($qrImageFile, $qrImage);
+        $user->qr_path = $qrImageFile;
+
+        $user->save();
     }
 }

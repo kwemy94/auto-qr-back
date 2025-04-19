@@ -18,7 +18,8 @@ return new class extends Migration
             $table->string('phone')->nullable()->unique();
             $table->string('gender')->nullable();
             $table->string('avatar')->nullable();
-            $table->string('qr_code')->unique();
+            $table->string('qr_code')->unique()->nullable();
+            $table->string('qr_path')->unique()->nullable();
             $table->date('birthday')->nullable();
             $table->date('end_trial_period');
             $table->string('password');
