@@ -6,17 +6,25 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
-use App\Http\Requests\Auth\UpdateProfileRequest;
-use App\Models\User;
+use App\Repositories\PackageRepository;
+use App\Repositories\UserRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
+
+    protected UserRepository $userRepository;
+
+    public function __construct(UserRepository $userRepository)
+    {
+        $this->userRepository = $userRepository;
+    }
+
     public function register(RegisterRequest $request)
     {
-        $user = User::create([
+        $user = $this->userRepository->store([
             'name'     => $request->name,
             'email'    => $request->email,
             'phone'    => $request->phone,
@@ -41,7 +49,7 @@ class AuthController extends Controller
             return response()->json(['error' => 'Invalid credentials.'], 401);
         }
 
-        return response()->json(compact('token'));
+        return response()->json(['token' => $token, 'user' => JWTAuth::user()]);
     }
 
     public function logout()
@@ -52,8 +60,11 @@ class AuthController extends Controller
 
     public function user()
     {
-        $user = JWTAuth::user();
-        return response()->json(compact('user'));
+        if(JWTAuth::user()){
+            $user = $this->userRepository->getUser(JWTAuth::user()->id);
+            return response()->json(compact('user'));
+        }
+        return null;
     }
 
     public function updateProfile(Request $request)
@@ -78,7 +89,7 @@ class AuthController extends Controller
         }
 
         $user->password = Hash::make($request->new_password);
-        $user->save();
+        $this->userRepository->update($user->id, ['password' => $user->password]);
 
         return response()->json([
             'message' => 'Password successfully changed.'

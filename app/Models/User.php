@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Str;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Notifications\Notifiable;
@@ -38,8 +37,8 @@ class User extends Authenticatable implements JWTSubject
 
     protected static function booted()
     {
-        static::creating(function ($user){
-            if(!$user->end_trial_period){
+        static::creating(function ($user) {
+            if (!$user->end_trial_period) {
                 $user->end_trial_period = now()->addDays(30);
             }
             $user->qr_code = self::generateUniqueQR();
@@ -69,21 +68,27 @@ class User extends Authenticatable implements JWTSubject
         return [];
     }
 
-    public function message_senders(){
+    public function message_senders()
+    {
         return $this->hasMany(Message::class, 'sender_id');
     }
-    public function message_receivers(){
+    public function message_receivers()
+    {
         return $this->hasMany(Message::class, 'receiver_id');
     }
-    public function subscriptions(){
-        return $this->hasMany(Subscription::class);
+    public function subscriptions()
+    {
+        return $this->belongsToMany(Package::class, 'subscriptions')
+            ->withPivot('start_date', 'end_date')
+            ->withTimestamps();
     }
 
-    public static function generateUniqueQR(){
-        do{
+    public static function generateUniqueQR()
+    {
+        do {
             $random = strtoupper(Str::random(10));
             $code = "US.QR-$random";
-        }while(self::where('qr_code', $code)->exists());
+        } while (self::where('qr_code', $code)->exists());
 
         return $code;
     }

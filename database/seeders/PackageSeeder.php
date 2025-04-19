@@ -17,12 +17,14 @@ class PackageSeeder extends Seeder
         $packages = [
             [
                 "name" => "Premium 3",
+                "duration" => 3,
                 "description" => "Vous avez accès à l'application gratuitement pendant 3 mois",
                 "amount" => 7000
             ],
             [
                 "name" => "VIP Ndop",
-                "description" => "Vous avez accès à l'application gratuitement pendant 1 ans",
+                "duration" => 12,
+                "description" => "Vous avez accès à l'application gratuitement pendant 12 mois",
                 "amount" => 15000
             ],
         ];
