@@ -55,4 +55,8 @@ class UserRepository extends ResourceRepository
             'expired' => $expired,
         ];
     }
+
+    public function getByQRCode(string $qr_code){
+        return $this->model->where('qr_code', $qr_code)->first();
+    }
 }
