@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\SubscribeRequest;
 use App\Models\Package;
+use App\Models\Subscription;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Repositories\PackageRepository;
 use Tymon\JWTAuth\Facades\JWTAuth;

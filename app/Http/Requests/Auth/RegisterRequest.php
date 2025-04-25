@@ -29,6 +29,19 @@ class RegisterRequest extends FormRequest
         ];
     }
 
+    public function messages()
+    {
+        return [
+            'name.required' => 'Le nom est requis.',
+            'email.required' => 'L’email est requis.',
+            'email.email' => 'Le format de l’email est invalide.',
+            'email.unique' => 'Cet email est déjà utilisé.',
+            'password.required' => 'Le mot de passe est requis.',
+            'password.min' => 'Le mot de passe doit contenir au moins 6 caractères.',
+            'password.confirmed' => 'Les mots de passe ne correspondent pas.',
+        ];
+    }
+
     /* public function withValidator($validator)
     {
         $validator->after(function ($validator) {

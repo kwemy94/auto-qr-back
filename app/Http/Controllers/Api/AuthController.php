@@ -24,21 +24,34 @@ class AuthController extends Controller
 
     public function register(RegisterRequest $request)
     {
-        $user = $this->userRepository->store([
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'phone'    => $request->phone,
-            'password' => Hash::make($request->password),
-        ]);
+        try {
+            $user = $this->userRepository->store([
+                'name' => $request->name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'password' => Hash::make($request->password),
+            ]);
 
-        $token = JWTAuth::fromUser($user);
-        return response()->json(['user' => $user, 'token' => $token, 'message' => 'Successful registration.']);
+            $token = JWTAuth::fromUser($user);
+
+            return response()->json([
+                'user' => $user,
+                'token' => $token,
+                'message' => 'Successful registration.'
+            ], 201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur serveur. Veuillez réessayer.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
+
 
 
     public function login(LoginRequest $request)
     {
-
         $login = $request->email ?? $request->phone;
         $password = $request->password;
         $field = $request->email ? 'email' : 'phone';
@@ -46,10 +59,17 @@ class AuthController extends Controller
         $credentials = [$field => $login, 'password' => $password];
 
         if (!$token = JWTAuth::attempt($credentials)) {
-            return response()->json(['error' => 'Invalid credentials.'], 401);
+            return response()->json([
+                'success' => false,
+                'message' => 'Email ou mot de passe incorrect.',
+            ], 401);
         }
 
-        return response()->json(['token' => $token, 'user' => JWTAuth::user()]);
+        return response()->json([
+            'success' => true,
+            'token' => $token,
+            'user' => JWTAuth::user(),
+        ]);
     }
 
     public function logout()
@@ -60,7 +80,7 @@ class AuthController extends Controller
 
     public function user()
     {
-        if(JWTAuth::user()){
+        if (JWTAuth::user()) {
             $user = $this->userRepository->getUser(JWTAuth::user()->id);
             return response()->json(compact('user'));
         }
@@ -74,7 +94,7 @@ class AuthController extends Controller
         $user->fill($request->only(['name', 'email', 'phone']))->save();
         return response()->json([
             'message' => 'Profile updated successfully.',
-            'user'    => $user,
+            'user' => $user,
         ]);
     }
 
