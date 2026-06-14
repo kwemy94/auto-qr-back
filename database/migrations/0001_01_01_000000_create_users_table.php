@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('qr_path')->unique()->nullable();
             $table->string('fcm_token')->unique()->nullable();
             $table->date('birthday')->nullable();
-            $table->date('end_trial_period');
+            $table->date('end_trial_period')->nullable();
             $table->string('password');
             $table->tinyInteger('role')->default(3)->comment("1 => super-admin, 2=>admin, 3=>user-simple");
             $table->timestamp('email_verified_at')->nullable();
