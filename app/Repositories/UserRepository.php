@@ -55,4 +55,11 @@ class UserRepository extends ResourceRepository
             'expired' => $expired,
         ];
     }
+
+    public function findByToken(string $token): ?User
+    {
+        return $this->model->where('fcm_token', $token)
+            // ->where('notifications_enabled', true)
+            ->first();
+    }
 }

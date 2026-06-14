@@ -10,7 +10,7 @@ Route::prefix('auth')->name('auth.')->group(function () {
 
     Route::middleware('auth:api')->group(function(){
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
-        Route::get('user', [AuthController::class, 'user'])->name('user');
+        Route::get('me', [AuthController::class, 'user'])->name('user');
         Route::post('change-password', [AuthController::class, 'changePassword'])->name('change-password');
 
     });

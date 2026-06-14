@@ -18,6 +18,7 @@ class UserSeeder extends Seeder
                 "name" => "Admin auto QR",
                 "email" => "grantshell0@gmail.com",
                 "phone" => "672517118",
+                "fcm_token" => "to_be_defined",
                 "password" => "$2y$10$5lQATLlEJyzjgPovHFIJoOo.af3DbqrDps49zKtd/F5V3sX3W0KLm",
             ],
         ];

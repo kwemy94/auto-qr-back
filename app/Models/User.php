@@ -42,6 +42,7 @@ class User extends Authenticatable implements JWTSubject
                 $user->end_trial_period = now()->addDays(30);
             }
             $user->qr_code = self::generateUniqueQR();
+            // $user->qr_code = self::generateUniqueQR().'-'. $user->fcm_token;
         });
     }
 

@@ -16,6 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(prepend:[
             ForceJsonResponse::class,
         ]);
+        $middleware->validateCsrfTokens(except: [
+            'n/*/send',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
