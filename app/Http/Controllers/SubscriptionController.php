@@ -12,6 +12,8 @@ use App\Repositories\PackageRepository;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Throwable;
 
 class SubscriptionController extends Controller
@@ -72,5 +74,49 @@ class SubscriptionController extends Controller
             }
             return ['status' => 'active_subscription'];
         });
+    }
+
+    public function generateQrCode($userId)
+    {
+        $user = $this->userRepository->getById($userId);
+
+        return QrCode::size(300)->generate($user->qr_code);
+    }
+
+    public function downloadQrCode($userId)
+    {
+        $user = $this->userRepository->getById($userId);
+
+        $qrImage = QrCode::format('png')->size(300)->generate($user->qr_code);
+        Storage::disk('public')->put('qrcodes/mon-code.png', $qrImage);
+
+        return response()->download(storage_path('app/public/qrcodes/mon-code.png'));
+    }
+
+    public function subscribetest($package)
+    {
+        $user = JWTAuth::user();
+
+        $subscriptionData = [
+            'start_date' => now(),
+            'end_date' => now()->addMonths($package->duration),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+
+        // 1. Génère l’abonnement via la table pivot
+        $user->subscriptions()->attach($package->id, $subscriptionData);
+
+        // 2. Générer le QR code
+        $qrContent = "user:{$user->id}|package:{$package->id}|date:" . now()->toDateString();
+        $qrImage = QrCode::format('png')->size(300)->generate($qrContent);
+
+        $fileName = "qrcodes/user_{$user->id}_package_{$package->id}.png";
+        Storage::disk('public')->put($fileName, $qrImage);
+
+        // 3. Enregistre éventuellement le chemin dans une table (ex: user_package.qr_path)
+        $user->subscriptions()->updateExistingPivot($package->id, [
+            'qr_path' => $fileName,
+        ]);
     }
 }

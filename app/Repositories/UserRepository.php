@@ -23,7 +23,7 @@ class UserRepository extends ResourceRepository
 
     public function subscribe(Package $package, $userId)
     {
-        return $this->model->where('id', $userId)->first()->subscriptions()->sync(
+        return $this->model->where('id', $userId)->first()->subscriptions()->attach(
             [
                 $package->id => [
                     'start_date' => Carbon::now()->toDateTime(),
@@ -56,10 +56,16 @@ class UserRepository extends ResourceRepository
         ];
     }
 
+
     public function findByToken(string $token): ?User
     {
         return $this->model->where('fcm_token', $token)
             // ->where('notifications_enabled', true)
             ->first();
+    }
+    
+    public function getByQRCode(string $qr_code){
+        return $this->model->where('qr_code', $qr_code)->first();
+
     }
 }
