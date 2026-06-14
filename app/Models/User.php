@@ -91,10 +91,10 @@ class User extends Authenticatable implements JWTSubject
         $uuid = Str::uuid();
         $uniqueQRData = "US.QR-" . $user->id . '-' . $uuid;
 
-        $qrImage = QrCode::format('png')->size(300)->generate($uniqueQRData);
+        // $qrImage = QrCode::format('png')->size(300)->generate($uniqueQRData);
         $qrImageFile = "qrcodes/{$uuid}.png";
 
-        Storage::disk('public')->put($qrImageFile, $qrImage);
+        // Storage::disk('public')->put($qrImageFile, $qrImage);
 
         $user->qr_code = $uniqueQRData;
         $user->qr_path = $qrImageFile;
