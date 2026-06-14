@@ -34,6 +34,12 @@ class NotificationPublicController extends Controller
         try {
             $user = $this->userRepository->findByToken($token);
 
+             if (empty($user->fcm_token)) {
+            return response()->view('errors.404', [
+                'message' => 'Ce propriétaire ne peut pas encore recevoir de notifications. Réessayez plus tard.',
+            ], 404);
+        }
+
             return view('notify.show', [
                 'token' => $token,
                 'messages' => FcmService::MESSAGES,
