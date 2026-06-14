@@ -59,7 +59,7 @@ class UserRepository extends ResourceRepository
 
     public function findByToken(string $token): ?User
     {
-        return $this->model->where('fcm_token', $token)
+        return $this->model->where('qr_token', $token)
             // ->where('notifications_enabled', true)
             ->first();
     }
