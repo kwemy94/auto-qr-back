@@ -7,6 +7,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\QrNotification;
 use App\Models\SignalLog;
 use App\Models\Vehicle;
 use App\Repositories\UserRepository;
@@ -34,11 +35,11 @@ class NotificationPublicController extends Controller
         try {
             $user = $this->userRepository->findByToken($token);
 
-             if (empty($user->fcm_token)) {
-            return response()->view('errors.404', [
-                'message' => 'Ce propriétaire ne peut pas encore recevoir de notifications. Réessayez plus tard.',
-            ], 404);
-        }
+            if (empty($user->fcm_token)) {
+                return response()->view('errors.404', [
+                    'message' => 'Ce propriétaire ne peut pas encore recevoir de notifications. Réessayez plus tard.',
+                ], 404);
+            }
 
             return view('notify.show', [
                 'token' => $token,
@@ -68,21 +69,15 @@ class NotificationPublicController extends Controller
     // ─────────────────────────────────────────────────────────
     public function send(Request $request, string $token)
     {
-        Log::info('QR Notify - Signalement reçu', [
-            'token' => $token,
-            'message_key' => $request->message_key,
-            'ip' => $request->ip(),
-        ]);
-        // dd($request->all(), $token);
         $request->validate([
             'message_key' => ['required', 'string', 'in:' . implode(',', array_keys(FcmService::MESSAGES))],
         ]);
 
         $user = $this->userRepository->findByToken($token);
 
-        // Anti-abus : max 3 signalements toutes les 10 minutes par IP + véhicule
+        // Anti-abus : max 3 signalements par 10 min par IP + user
         $ipHash = hash('sha256', $request->ip() . config('app.key'));
-        $recentCount = SignalLog::where('user_id', $user->id)
+        $recentCount = QrNotification::where('user_id', $user->id)
             ->where('ip_hash', $ipHash)
             ->where('created_at', '>=', now()->subMinutes(10))
             ->count();
@@ -94,23 +89,25 @@ class NotificationPublicController extends Controller
             ], 429);
         }
 
-        // Envoi de la notification si le propriétaire a un token FCM
+        // Envoi FCM
         $sent = false;
         if ($user->fcm_token) {
             $sent = $this->fcm->send($user->fcm_token, $request->message_key);
         }
 
-        Log::info('QR Notify - Signalement reçu', [
+        // ── Enregistrement en base ────────────────────────────────
+        QrNotification::create([
             'user_id' => $user->id,
             'message_key' => $request->message_key,
+            'message_text' => FcmService::MESSAGES[$request->message_key],
             'ip_hash' => $ipHash,
-            'sent' => $sent,
+            'is_read' => false,
         ]);
-        # Log du signalement (IP hashée — jamais en clair)
-        SignalLog::create([
+
+        Log::info('QR Notify - Signalement enregistré', [
             'user_id' => $user->id,
             'message_key' => $request->message_key,
-            'ip_hash' => $ipHash,
+            'sent' => $sent,
         ]);
 
         return response()->json([

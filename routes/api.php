@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SubscriptionController;
 use Illuminate\Support\Facades\Route;
 
@@ -24,5 +25,11 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/scan-qr', [MessageController::class, 'handleScan']);
 
     /* some problem with put or patch request > to use it, you should add _method=PATCH|PUSH in request url */
+
+
+
+    Route::get('/notifications',          [NotificationController::class, 'index']);
+    Route::get('/notifications/{id}',     [NotificationController::class, 'show']);
+    Route::put('/notifications/read-all', [NotificationController::class, 'readAll']);
 
 });
