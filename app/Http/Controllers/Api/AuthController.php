@@ -30,6 +30,7 @@ class AuthController extends Controller
                 'email' => $request->email,
                 'phone' => $request->phone,
                 'password' => Hash::make($request->password),
+                'fcm_token' => $request->fcm_token ?? null,
             ]);
 
             $token = JWTAuth::fromUser($user);
@@ -113,6 +114,22 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Password successfully changed.'
+        ]);
+    }
+
+    public function updateFcmToken(Request $request)
+    {
+        $request->validate([
+            'fcm_token' => ['required', 'string', 'max:255'],
+        ]);
+
+        $request->user()->update([
+            'fcm_token' => $request->fcm_token,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Token FCM mis à jour.',
         ]);
     }
 }

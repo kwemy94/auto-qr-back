@@ -90,9 +90,18 @@ class NotificationPublicController extends Controller
         }
 
         // Envoi FCM
+        Log::info('QR Notify - Nouveau signalement', [
+            'user_id' => $user->id,
+            'message_key' => $request->message_key,
+        ]);
         $sent = false;
         if ($user->fcm_token) {
             $sent = $this->fcm->send($user->fcm_token, $request->message_key);
+            Log::info('QR Notify - Notification envoyée', [
+                'user_id' => $user->id,
+                'message_key' => $request->message_key,
+                'fcm_sent' => $sent,
+            ]);
         }
 
         // ── Enregistrement en base ────────────────────────────────

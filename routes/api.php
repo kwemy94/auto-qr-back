@@ -32,4 +32,6 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/notifications/{id}',     [NotificationController::class, 'show']);
     Route::put('/notifications/read-all', [NotificationController::class, 'readAll']);
 
+     Route::put('/auth/fcm-token', [AuthController::class, 'updateFcmToken']);
+
 });
