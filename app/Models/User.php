@@ -20,12 +20,7 @@ class User extends Authenticatable implements JWTSubject
      *
      * @var list<string>
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'phone',
-        'password',
-    ];
+    protected $guarded = ['id'];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -39,12 +34,12 @@ class User extends Authenticatable implements JWTSubject
 
     protected static function booted()
     {
-        static::creating(function ($user) {
+        static::created(function ($user) {
             if (!$user->end_trial_period) {
                 $user->end_trial_period = now()->addDays(30);
+                $user->save();
             }
-            $user->qr_code = self::generateUniqueQR();
-            // $user->qr_code = self::generateUniqueQR().'-'. $user->fcm_token;
+            self::generateUniqueQR($user);
         });
     }
 
@@ -86,23 +81,23 @@ class User extends Authenticatable implements JWTSubject
             ->withTimestamps();
     }
 
-    public static function generateUniqueQR(User $user)
+
+    public static function generateUniqueQR(User $user): void
     {
-        if (!empty($user->qr_path) && Storage::exists($user->qr_path)) {
-            Storage::delete($user->qr_path);
+        if (!empty($user->qr_path) && Storage::disk('public')->exists($user->qr_path)) {
+            Storage::disk('public')->delete($user->qr_path);
         }
 
-        $uuid = $user->id . Str::uuid();
+        $uuid = Str::uuid();
+        $uniqueQRData = "US.QR-" . $user->id . '-' . $uuid;
 
-        $uniqueQRData = "US.QR-" . $uuid;
-        $user->qr_code = $uniqueQRData;
-
-        $qrImage = QrCode::size(300)->generate($uniqueQRData);
-        $qrImageFile = "qrcodes/$uuid.png";
+        $qrImage = QrCode::format('png')->size(300)->generate($uniqueQRData);
+        $qrImageFile = "qrcodes/{$uuid}.png";
 
         Storage::disk('public')->put($qrImageFile, $qrImage);
-        $user->qr_path = $qrImageFile;
 
+        $user->qr_code = $uniqueQRData;
+        $user->qr_path = $qrImageFile;
         $user->save();
     }
 }
