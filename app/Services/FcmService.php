@@ -2,7 +2,6 @@
 
 // ============================================================
 // app/Services/FcmService.php
-// Service d'envoi de notifications push via Firebase FCM v1
 // ============================================================
 
 namespace App\Services;
@@ -13,14 +12,12 @@ use Google\Auth\Credentials\ServiceAccountCredentials;
 
 class FcmService
 {
-    // Messages prédéfinis disponibles côté signalant
-    // La clé est stockée en base, le texte affiché vient d'ici
     public const MESSAGES = [
-        'blocking'  => '🚗 Votre véhicule bloque le passage. Merci de le déplacer.',
-        'urgent'    => '🚨 Urgence ! Votre véhicule bloque complètement l\'accès.',
-        'lights'    => '💡 Vos phares sont allumés. Pensez à les éteindre.',
-        'window'    => '🪟 Une vitre de votre véhicule est ouverte.',
-        'tires'     => '🔴 Un pneu de votre véhicule semble dégonflé.',
+        'blocking' => '🚗 Votre véhicule bloque le passage. Merci de le déplacer.',
+        'urgent' => '🚨 Urgence ! Votre véhicule bloque complètement l\'accès.',
+        'lights' => '💡 Vos phares sont allumés. Pensez à les éteindre.',
+        'window' => '🪟 Une vitre de votre véhicule est ouverte.',
+        'tires' => '🔴 Un pneu de votre véhicule semble dégonflé.',
     ];
 
     private string $projectId;
@@ -28,21 +25,31 @@ class FcmService
 
     public function __construct()
     {
-        $this->projectId     = config('services.fcm.project_id');
-        $this->credentialsPath = config('services.fcm.credentials');
+        $this->projectId = config('services.fcm.project_id');
+
+        // ── Résoudre le chemin absolu ─────────────────────────────────────
+        // ServiceAccountCredentials exige un chemin absolu.
+        // base_path() convertit un chemin relatif depuis la racine Laravel.
+        $rawPath = config('services.fcm.credentials');
+
+        $this->credentialsPath = str_starts_with($rawPath, '/')
+            ? $rawPath
+            : base_path($rawPath);
     }
 
-    /**
-     * Envoie une notification push au propriétaire du véhicule.
-     *
-     * @param  string $fcmToken   Token FCM du téléphone propriétaire
-     * @param  string $messageKey Clé du message prédéfini
-     * @return bool
-     */
     public function send(string $fcmToken, string $messageKey): bool
     {
         if (!array_key_exists($messageKey, self::MESSAGES)) {
             Log::warning('FCM: clé de message invalide', ['key' => $messageKey]);
+            return false;
+        }
+
+        // ── Vérifier que le fichier credentials existe ────────────────────
+        if (!file_exists($this->credentialsPath)) {
+            Log::error('FCM: fichier credentials introuvable', [
+                'path' => $this->credentialsPath,
+                'hint' => 'Vérifiez FCM_CREDENTIALS dans .env et placez le fichier JSON Firebase à cet emplacement.',
+            ]);
             return false;
         }
 
@@ -57,12 +64,12 @@ class FcmService
                         'token' => $fcmToken,
                         'notification' => [
                             'title' => 'QR Notify 🔔',
-                            'body'  => $body,
+                            'body' => $body,
                         ],
                         'android' => [
                             'priority' => 'high',
                             'notification' => [
-                                'sound'        => 'default',
+                                'sound' => 'default',
                                 'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
                             ],
                         ],
@@ -76,7 +83,7 @@ class FcmService
                         ],
                         'data' => [
                             'message_key' => $messageKey,
-                            'timestamp'   => now()->toIso8601String(),
+                            'timestamp' => now()->toIso8601String(),
                         ],
                     ],
                 ]);
@@ -86,8 +93,18 @@ class FcmService
                 return true;
             }
 
+            // Token FCM invalide (app désinstallée) → logger pour nettoyage
+            if (
+                $response->status() === 404 ||
+                str_contains((string) $response->body(), 'UNREGISTERED')
+            ) {
+                Log::warning('FCM: token invalide (UNREGISTERED)', [
+                    'fcm_token' => substr($fcmToken, 0, 20),
+                ]);
+            }
+
             Log::error('FCM: échec envoi', [
-                'status'   => $response->status(),
+                'status' => $response->status(),
                 'response' => $response->json(),
             ]);
 
@@ -99,16 +116,15 @@ class FcmService
         }
     }
 
-    /**
-     * Obtient un access token OAuth2 via le compte de service Google.
-     * Nécessite : composer require google/auth
-     */
     private function getAccessToken(): string
     {
         $scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
-
         $credentials = new ServiceAccountCredentials($scopes, $this->credentialsPath);
         $token = $credentials->fetchAuthToken();
+
+        if (empty($token['access_token'])) {
+            throw new \RuntimeException('FCM: impossible d\'obtenir un access token Google.');
+        }
 
         return $token['access_token'];
     }
