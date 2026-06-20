@@ -16,3 +16,7 @@ Route::get('/n/{token}', [NotificationPublicController::class, 'show'])
 Route::post('/n/{token}/send', [NotificationPublicController::class, 'send'])
     ->name('notify.send')
     ->middleware('throttle:5,1'); // max 5 signalements par minute par IP
+
+Route::get('/privacy-policy', function () {
+    return view('privacy_policy');
+})->name('privacy-policy');
