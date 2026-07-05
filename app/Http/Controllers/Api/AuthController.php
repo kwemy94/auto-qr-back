@@ -10,6 +10,7 @@ use App\Repositories\PackageRepository;
 use App\Repositories\UserRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
@@ -42,6 +43,7 @@ class AuthController extends Controller
             ], 201);
 
         } catch (\Exception $e) {
+            Log::info('Erreur server : '.$e->getMessage());
             return response()->json([
                 'message' => 'Erreur serveur. Veuillez réessayer.',
                 'error' => $e->getMessage()

@@ -217,29 +217,12 @@
         /* ── Footer ─────────────────────────────────────────────── */
         .footer {
             text-align: center;
+            margin-top: 3rem;
             padding-top: 1.5rem;
             border-top: 1px solid var(--border);
-        }
-
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 1.2rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .footer-links a {
+            font-size: 0.78rem;
             color: var(--muted);
-            font-size: 0.75rem;
-            text-decoration: none;
-        }
-
-        .footer-links a:hover { color: var(--accent); }
-
-        .footer-copy {
-            font-size: 0.7rem;
-            color: var(--muted);
-            opacity: 0.6;
+            opacity: 0.7;
         }
 
         @media (max-width: 360px) {
@@ -336,13 +319,10 @@
         </div>
 
         {{-- ── Footer ── --}}
-        <div class="footer">
-            {{-- <div class="footer-links">
-                <a href="#">Connexion</a>
-                <a href="#">Inscription</a>
-            </div> --}}
-            <div class="footer-copy">QR Notify &copy; {{ date('Y') }} </div>
-        </div>
+        <footer class="footer">
+            QR Notify &mdash; Application de signalement anonyme de véhicules<br>
+            &copy; StreetSmart &mdash; {{ date('Y') }}
+        </footer>
 
     </div>
 

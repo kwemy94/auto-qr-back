@@ -537,10 +537,10 @@
             </p>
         </div>
 
-        <div class="footer">
+        <footer class="footer">
             QR Notify &mdash; Application de signalement anonyme de véhicules<br>
-            @ StreetSmart &mdash; {{ date('Y') }}
-        </div>
+            &copy; StreetSmart &mdash; {{ date('Y') }}
+        </footer>
 
     </div>
 

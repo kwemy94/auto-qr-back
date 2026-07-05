@@ -260,15 +260,13 @@
 
         /* ── Footer ─────────────────────────────────────────────── */
         .footer {
-            font-size: 0.72rem;
-            color: var(--muted);
             text-align: center;
-            opacity: 0.6;
-        }
-
-        .footer span {
-            color: var(--accent);
-            font-weight: 600;
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.78rem;
+            color: var(--muted);
+            opacity: 0.7;
         }
 
         @media (max-width: 360px) {
@@ -369,7 +367,8 @@
     </div>
 
     <footer class="footer">
-        <span>QR Notify</span> &mdash; Signalement anonyme &amp; instantané
+        QR Notify &mdash; Application de signalement anonyme de véhicules<br>
+        &copy; StreetSmart &mdash; {{ date('Y') }}
     </footer>
 
 </body>
