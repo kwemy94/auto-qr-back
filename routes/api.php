@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\PasswordResetController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SubscriptionController;
@@ -9,6 +11,12 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('auth')->name('auth.')->group(function () {
     Route::post('register', [AuthController::class, 'register'])->name('register');
     Route::post('login', [AuthController::class, 'login'])->name('login');
+
+    // Mot de passe oublié : code à 6 chiffres par e-mail
+    Route::post('forgot-password', [PasswordResetController::class, 'sendCode'])
+        ->middleware('throttle:3,1')->name('forgot-password');
+    Route::post('reset-password', [PasswordResetController::class, 'reset'])
+        ->middleware('throttle:5,1')->name('reset-password');
 
     Route::middleware('auth:api')->group(function(){
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
@@ -33,5 +41,8 @@ Route::middleware('auth:api')->group(function () {
     Route::put('/notifications/read-all', [NotificationController::class, 'readAll']);
 
      Route::put('/auth/fcm-token', [AuthController::class, 'updateFcmToken']);
+
+    Route::post('/contact', [ContactController::class, 'store'])
+        ->middleware('throttle:5,1')->name('contact');
 
 });

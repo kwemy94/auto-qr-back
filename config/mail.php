@@ -115,4 +115,7 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    // Adresse qui reçoit les messages du formulaire de contact de l'app
+    'contact_address' => env('CONTACT_EMAIL'),
+
 ];
