@@ -89,29 +89,31 @@ class NotificationPublicController extends Controller
             ], 429);
         }
 
-        // Envoi FCM
         Log::info('QR Notify - Nouveau signalement', [
             'user_id' => $user->id,
             'message_key' => $request->message_key,
         ]);
-        $sent = false;
-        if ($user->fcm_token) {
-            $sent = $this->fcm->send($user->fcm_token, $request->message_key);
-            Log::info('QR Notify - Notification envoyée', [
-                'user_id' => $user->id,
-                'message_key' => $request->message_key,
-                'fcm_sent' => $sent,
-            ]);
-        }
 
-        // ── Enregistrement en base ────────────────────────────────
-        QrNotification::create([
+        // ── Enregistrement en base (avant l'envoi : son id est transmis
+        //    dans la notification pour ouvrir directement le détail) ──
+        $notification = QrNotification::create([
             'user_id' => $user->id,
             'message_key' => $request->message_key,
             'message_text' => FcmService::MESSAGES[$request->message_key],
             'ip_hash' => $ipHash,
             'is_read' => false,
         ]);
+
+        // Envoi FCM
+        $sent = false;
+        if ($user->fcm_token) {
+            $sent = $this->fcm->send($user->fcm_token, $request->message_key, $notification->id);
+            Log::info('QR Notify - Notification envoyée', [
+                'user_id' => $user->id,
+                'message_key' => $request->message_key,
+                'fcm_sent' => $sent,
+            ]);
+        }
 
         Log::info('QR Notify - Signalement enregistré', [
             'user_id' => $user->id,

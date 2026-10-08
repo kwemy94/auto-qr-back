@@ -37,7 +37,11 @@ class FcmService
             : base_path($rawPath);
     }
 
-    public function send(string $fcmToken, string $messageKey): bool
+    /**
+     * @param int|null $notificationId  id du QrNotification : permet à l'app
+     *                                  d'ouvrir directement son détail au clic.
+     */
+    public function send(string $fcmToken, string $messageKey, ?int $notificationId = null): bool
     {
         if (!array_key_exists($messageKey, self::MESSAGES)) {
             Log::warning('FCM: clé de message invalide', ['key' => $messageKey]);
@@ -70,7 +74,12 @@ class FcmService
                             'priority' => 'high',
                             'notification' => [
                                 'sound' => 'default',
-                                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                                // Icône monochrome et couleur de la marque, déclarées dans l'app
+                                // (plugins/withNotificationIcon.js)
+                                'icon' => 'ic_notification',
+                                'color' => '#C9962A',
+                                // Pas de click_action : Android ouvre alors l'app au clic.
+                                // (FLUTTER_NOTIFICATION_CLICK ne correspondait à aucune activité.)
                             ],
                         ],
                         'apns' => [
@@ -81,10 +90,12 @@ class FcmService
                                 ],
                             ],
                         ],
-                        'data' => [
+                        // Les valeurs de "data" doivent toutes être des chaînes (FCM v1)
+                        'data' => array_filter([
                             'message_key' => $messageKey,
                             'timestamp' => now()->toIso8601String(),
-                        ],
+                            'notification_id' => $notificationId !== null ? (string) $notificationId : null,
+                        ], fn ($v) => $v !== null),
                     ],
                 ]);
 
