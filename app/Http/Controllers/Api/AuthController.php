@@ -4,12 +4,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ChangePasswordRequest;
+use App\Http\Requests\Auth\DeleteAccountRequest;
+use App\Http\Requests\Auth\UpdateProfileRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Repositories\PackageRepository;
 use App\Repositories\UserRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -90,14 +94,15 @@ class AuthController extends Controller
         return null;
     }
 
-    public function updateProfile(Request $request)
+    public function updateProfile(UpdateProfileRequest $request)
     {
         $user = JWTAuth::user();
 
-        $user->fill($request->only(['name', 'email', 'phone']))->save();
+        $user->fill($request->validated())->save();
         return response()->json([
-            'message' => 'Profile updated successfully.',
-            'user' => $user,
+            'success' => true,
+            'message' => __('mobile.profile_updated'),
+            'user' => $user->fresh(),
         ]);
     }
 
@@ -107,15 +112,59 @@ class AuthController extends Controller
 
         if (!Hash::check($request->current_password, $user->password)) {
             return response()->json([
-                'message' => 'The current password is incorrect.'
-            ], 400);
+                'success' => false,
+                'message' => __('mobile.current_password_incorrect'),
+                'errors' => ['current_password' => [__('mobile.current_password_incorrect')]],
+            ], 422);
         }
 
         $user->password = Hash::make($request->new_password);
         $this->userRepository->update($user->id, ['password' => $user->password]);
 
         return response()->json([
-            'message' => 'Password successfully changed.'
+            'success' => true,
+            'message' => __('mobile.password_changed'),
+        ]);
+    }
+
+    /**
+     * DELETE /api/auth/account  { password }
+     * Suppression définitive du compte (exigence Google Play).
+     * Les signalements et logs liés sont supprimés en cascade ; les messages
+     * de contact sont conservés de façon anonyme (user_id → null).
+     */
+    public function deleteAccount(DeleteAccountRequest $request)
+    {
+        $user = JWTAuth::user();
+
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => __('mobile.current_password_incorrect'),
+                'errors' => ['password' => [__('mobile.current_password_incorrect')]],
+            ], 422);
+        }
+
+        DB::transaction(function () use ($user) {
+            // subscriptions.user_id n'a pas de suppression en cascade
+            DB::table('subscriptions')->where('user_id', $user->id)->delete();
+
+            if (!empty($user->qr_path) && Storage::disk('public')->exists($user->qr_path)) {
+                Storage::disk('public')->delete($user->qr_path);
+            }
+
+            $user->delete();
+        });
+
+        try {
+            JWTAuth::invalidate(JWTAuth::getToken());
+        } catch (\Throwable $e) {
+            // Le compte est supprimé : un échec d'invalidation du token n'est pas bloquant
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => __('mobile.account_deleted'),
         ]);
     }
 

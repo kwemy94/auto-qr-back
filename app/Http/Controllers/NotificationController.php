@@ -8,6 +8,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\QrNotification;
+use App\Services\FcmService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -81,5 +82,29 @@ class NotificationController extends Controller
             ->update(['is_read' => true, 'read_at' => now()]);
 
         return response()->json(['success' => true]);
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // POST /api/notifications/test
+    // Envoie une notification de test au téléphone de l'utilisateur
+    // (bouton « Tester » du profil). Non enregistrée comme signalement.
+    // ─────────────────────────────────────────────────────────
+    public function test(FcmService $fcm)
+    {
+        $user = Auth::user();
+
+        if (empty($user->fcm_token)) {
+            return response()->json([
+                'success' => false,
+                'message' => __('mobile.test_no_token'),
+            ], 422);
+        }
+
+        $sent = $fcm->sendTest($user->fcm_token);
+
+        return response()->json([
+            'success' => $sent,
+            'message' => $sent ? __('mobile.test_sent') : __('mobile.test_failed'),
+        ], $sent ? 200 : 502);
     }
 }

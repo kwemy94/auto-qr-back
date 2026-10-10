@@ -22,6 +22,8 @@ Route::prefix('auth')->name('auth.')->group(function () {
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
         Route::get('me', [AuthController::class, 'user'])->name('user');
         Route::post('change-password', [AuthController::class, 'changePassword'])->name('change-password');
+        Route::delete('account', [AuthController::class, 'deleteAccount'])
+            ->middleware('throttle:5,1')->name('delete-account');
 
     });
 });
@@ -39,6 +41,8 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/notifications',          [NotificationController::class, 'index']);
     Route::get('/notifications/{id}',     [NotificationController::class, 'show']);
     Route::put('/notifications/read-all', [NotificationController::class, 'readAll']);
+    Route::post('/notifications/test',    [NotificationController::class, 'test'])
+        ->middleware('throttle:5,1')->name('notifications.test');
 
      Route::put('/auth/fcm-token', [AuthController::class, 'updateFcmToken']);
 

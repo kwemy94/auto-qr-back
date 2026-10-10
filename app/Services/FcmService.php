@@ -38,6 +38,8 @@ class FcmService
     }
 
     /**
+     * Notification de signalement envoyée au propriétaire du véhicule.
+     *
      * @param int|null $notificationId  id du QrNotification : permet à l'app
      *                                  d'ouvrir directement son détail au clic.
      */
@@ -48,6 +50,33 @@ class FcmService
             return false;
         }
 
+        return $this->dispatch($fcmToken, 'QR Notify 🔔', self::MESSAGES[$messageKey], [
+            'message_key' => $messageKey,
+            'notification_id' => $notificationId !== null ? (string) $notificationId : null,
+        ]);
+    }
+
+    /**
+     * Notification de test que l'utilisateur s'envoie depuis son profil,
+     * pour vérifier que son téléphone reçoit bien les alertes.
+     * N'est pas enregistrée comme signalement.
+     */
+    public function sendTest(string $fcmToken): bool
+    {
+        return $this->dispatch(
+            $fcmToken,
+            __('mobile.test_notification_title'),
+            __('mobile.test_notification_body'),
+            ['message_key' => 'test'],
+        );
+    }
+
+    /**
+     * Envoi effectif via l'API HTTP v1 de FCM.
+     * Les valeurs nulles de $data sont ignorées.
+     */
+    private function dispatch(string $fcmToken, string $title, string $body, array $data): bool
+    {
         // ── Vérifier que le fichier credentials existe ────────────────────
         if (!file_exists($this->credentialsPath)) {
             Log::error('FCM: fichier credentials introuvable', [
@@ -57,8 +86,6 @@ class FcmService
             return false;
         }
 
-        $body = self::MESSAGES[$messageKey];
-
         try {
             $accessToken = $this->getAccessToken();
 
@@ -67,7 +94,7 @@ class FcmService
                     'message' => [
                         'token' => $fcmToken,
                         'notification' => [
-                            'title' => 'QR Notify 🔔',
+                            'title' => $title,
                             'body' => $body,
                         ],
                         'android' => [
@@ -91,16 +118,15 @@ class FcmService
                             ],
                         ],
                         // Les valeurs de "data" doivent toutes être des chaînes (FCM v1)
-                        'data' => array_filter([
-                            'message_key' => $messageKey,
-                            'timestamp' => now()->toIso8601String(),
-                            'notification_id' => $notificationId !== null ? (string) $notificationId : null,
-                        ], fn ($v) => $v !== null),
+                        'data' => array_filter(
+                            $data + ['timestamp' => now()->toIso8601String()],
+                            fn ($v) => $v !== null,
+                        ),
                     ],
                 ]);
 
             if ($response->successful()) {
-                Log::info('FCM: notification envoyée', ['message_key' => $messageKey]);
+                Log::info('FCM: notification envoyée', ['message_key' => $data['message_key'] ?? null]);
                 return true;
             }
 
