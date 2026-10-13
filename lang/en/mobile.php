@@ -21,6 +21,9 @@ return [
     'test_no_token' => 'No device registered for notifications. Open the app on your phone and allow notifications.',
     'test_failed' => 'The test notification could not be sent.',
 
+    'payments_unavailable' => 'Online payment is coming soon. Please try again later.',
+    'plan_unavailable' => 'This plan is no longer available.',
+
     'contact_sent' => 'Message sent successfully!',
     'contact_mail_subject' => '[Contact] :subject',
 ];

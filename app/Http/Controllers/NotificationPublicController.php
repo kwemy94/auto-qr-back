@@ -12,6 +12,7 @@ use App\Models\SignalLog;
 use App\Models\Vehicle;
 use App\Repositories\UserRepository;
 use App\Services\FcmService;
+use App\Services\SubscriptionService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -21,6 +22,7 @@ class NotificationPublicController extends Controller
     private $userRepository;
     public function __construct(
         private FcmService $fcm,
+        private SubscriptionService $subscriptions,
         UserRepository $userRepository
     ) {
         $this->userRepository = $userRepository;
@@ -106,7 +108,13 @@ class NotificationPublicController extends Controller
 
         // Envoi FCM
         $sent = false;
-        if ($user->fcm_token) {
+        // Essai terminé sans abonnement : le signalement reste enregistré
+        // (visible dans l'historique du propriétaire), mais pas de push.
+        $entitled = $this->subscriptions->isEntitled($user);
+        if (!$entitled) {
+            Log::info('QR Notify - Push non envoyé : pas d\'abonnement actif', ['user_id' => $user->id]);
+        }
+        if ($user->fcm_token && $entitled) {
             $sent = $this->fcm->send($user->fcm_token, $request->message_key, $notification->id);
             Log::info('QR Notify - Notification envoyée', [
                 'user_id' => $user->id,

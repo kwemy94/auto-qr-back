@@ -2,10 +2,10 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PasswordResetController;
+use App\Http\Controllers\Api\SubscriptionApiController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\SubscriptionController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->name('auth.')->group(function () {
@@ -29,9 +29,23 @@ Route::prefix('auth')->name('auth.')->group(function () {
 });
 
 
+// Notification serveur-à-serveur de l'agrégateur de paiement (publique ;
+// l'authenticité est vérifiée par chaque PaymentGateway::handleWebhook)
+Route::post('/payments/webhook/{provider}', [SubscriptionApiController::class, 'webhook'])
+    ->middleware('throttle:60,1')->name('payments.webhook');
+
 Route::middleware('auth:api')->group(function () {
     Route::post('/profile', [AuthController::class, 'updateProfile'])->name('auth.update.profile');
-    Route::post('/subscribe', [SubscriptionController::class, 'store'])->name('user.subscribe');
+    // Ancienne route POST /subscribe supprimée : elle activait un abonnement
+    // SANS paiement, pour n'importe quel user_id envoyé dans la requête.
+
+    // ── Abonnement premium (Mobile Money) ─────────────────────
+    Route::get('/subscription', [SubscriptionApiController::class, 'status'])->name('subscription.status');
+    Route::get('/subscription/plans', [SubscriptionApiController::class, 'plans'])->name('subscription.plans');
+    Route::post('/subscription/checkout', [SubscriptionApiController::class, 'checkout'])
+        ->middleware('throttle:5,1')->name('subscription.checkout');
+    Route::get('/subscription/payments/{reference}', [SubscriptionApiController::class, 'payment'])
+        ->whereUuid('reference')->middleware('throttle:60,1')->name('subscription.payment');
     Route::post('/scan-qr', [MessageController::class, 'handleScan']);
 
     /* some problem with put or patch request > to use it, you should add _method=PATCH|PUSH in request url */

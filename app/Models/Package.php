@@ -11,6 +11,8 @@ class Package extends Model
 
     protected $casts = [
         'duration' => 'integer',
+        'is_active' => 'boolean',
+        'sort_order' => 'integer',
     ];
     
     public function subscriptions(){
