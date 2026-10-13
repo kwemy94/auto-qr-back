@@ -251,6 +251,62 @@
             color: var(--error);
         }
 
+        /* ── Suivi de la réponse du propriétaire ────────────────── */
+        .status {
+            display: none;
+            margin-top: 0.9rem;
+            border-radius: 9px;
+            padding: 0.9rem 1rem;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            text-align: center;
+        }
+
+        .status-icon {
+            font-size: 1.6rem;
+            line-height: 1;
+            margin-bottom: 0.4rem;
+        }
+
+        .status-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .status-sub {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-top: 0.3rem;
+            line-height: 1.5;
+        }
+
+        .status.answered {
+            border-color: var(--accent);
+            background: var(--accent-lt);
+        }
+
+        .status.answered .status-title {
+            color: var(--accent);
+        }
+
+        .status .pulse {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--muted);
+            margin-right: 6px;
+            vertical-align: 1px;
+            animation: pulse 1.4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            50% {
+                opacity: 0.25;
+            }
+        }
+
         /* ── Loader spinner ─────────────────────────────────────── */
         .spinner {
             display: inline-block;
@@ -378,6 +434,13 @@ $label = preg_replace('/^[\x{1F000}-\x{1FFFF}\x{2600}-\x{27FF}\x{FE00}-\x{FEFF}]
         </div>
 
         <div id="feedback" class="feedback" role="alert" aria-live="assertive"></div>
+
+        {{-- Suivi en direct : vu / réponse du propriétaire --}}
+        <div id="status" class="status" aria-live="polite">
+            <div id="status-icon" class="status-icon" aria-hidden="true"></div>
+            <div id="status-title" class="status-title"></div>
+            <div id="status-sub" class="status-sub"></div>
+        </div>
     </div>
 
     {{-- ── Note anonymat ──────────────────────────────────────────── --}}
@@ -404,6 +467,7 @@ $label = preg_replace('/^[\x{1F000}-\x{1FFFF}\x{2600}-\x{27FF}\x{FE00}-\x{FEFF}]
                 '';
 
             let selectedKey = null;
+            let sent = false;
 
             const btnSend = document.getElementById('btn-send');
             const feedback = document.getElementById('feedback');
@@ -452,24 +516,90 @@ $label = preg_replace('/^[\x{1F000}-\x{1FFFF}\x{2600}-\x{27FF}\x{FE00}-\x{FEFF}]
                             b.disabled = true;
                             b.classList.remove('selected');
                         });
+                        sent = true;
                         btnSend.disabled = true;
                         btnSend.textContent = 'Signalement envoyé';
+                        if (data.report_id) startTracking(data.report_id);
                     } else {
                         showFeedback('error', data.message ?? 'Une erreur est survenue. Réessayez.');
+                        setLoading(false);
                     }
                 } catch (e) {
                     showFeedback('error', 'Connexion impossible. Vérifiez votre réseau.');
-                } finally {
                     setLoading(false);
                 }
             });
+
+            // ── Suivi de la réponse du propriétaire ─────────────────
+            const POLL_MS = 4000;
+            const POLL_MAX_MS = 30 * 60 * 1000; // on arrête après 30 min
+            const statusBox = document.getElementById('status');
+            const statusIcon = document.getElementById('status-icon');
+            const statusTitle = document.getElementById('status-title');
+            const statusSub = document.getElementById('status-sub');
+
+            function renderStatus(s) {
+                statusBox.style.display = 'block';
+                statusBox.classList.toggle('answered', !!s.response_key);
+                const time = s.responded_at ?
+                    new Date(s.responded_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) :
+                    '';
+
+                if (s.response_key === 'resolved') {
+                    statusIcon.textContent = '✅';
+                    statusTitle.textContent = 'Le propriétaire indique que c\'est réglé.';
+                    statusSub.textContent = time ? `Réponse à ${time}` : '';
+                } else if (s.response_key === 'coming') {
+                    statusIcon.textContent = '🏃';
+                    statusTitle.textContent = 'Le propriétaire arrive !';
+                    statusSub.textContent = time ? `Réponse à ${time}` : '';
+                } else if (s.response_minutes) {
+                    statusIcon.textContent = '⏱️';
+                    statusTitle.textContent = `Le propriétaire arrive dans ${s.response_minutes} minutes.`;
+                    statusSub.textContent = time ? `Réponse à ${time}` : '';
+                } else if (s.is_read) {
+                    statusIcon.textContent = '👀';
+                    statusTitle.textContent = 'Le propriétaire a vu votre signalement.';
+                    statusSub.innerHTML = '<span class="pulse"></span>En attente de sa réponse…';
+                } else {
+                    statusIcon.textContent = '📨';
+                    statusTitle.textContent = 'Signalement transmis.';
+                    statusSub.innerHTML = '<span class="pulse"></span>En attente que le propriétaire le voie…';
+                }
+            }
+
+            function startTracking(reportId) {
+                const startedAt = Date.now();
+                renderStatus({});
+
+                const poll = async () => {
+                    try {
+                        const res = await fetch(`/n/report/${reportId}`, {
+                            headers: { 'Accept': 'application/json' },
+                        });
+                        if (res.ok) {
+                            const s = await res.json();
+                            renderStatus(s);
+                            if (s.response_key === 'resolved') return; // fin du suivi
+                        }
+                    } catch (e) {
+                        // réseau instable : on réessaie au prochain tour
+                    }
+                    if (Date.now() - startedAt < POLL_MAX_MS) {
+                        setTimeout(poll, POLL_MS);
+                    } else {
+                        statusSub.textContent = 'Suivi arrêté. Rechargez la page pour un nouveau signalement.';
+                    }
+                };
+                setTimeout(poll, POLL_MS);
+            }
 
             // ── Helpers ─────────────────────────────────────────────
             function setLoading(on) {
                 if (on) {
                     btnSend.disabled = true;
                     btnSend.innerHTML = '<span class="spinner"></span>Envoi en cours…';
-                } else {
+                } else if (!sent) {
                     btnSend.innerHTML = 'Envoyer le signalement';
                     if (selectedKey) btnSend.disabled = false;
                 }

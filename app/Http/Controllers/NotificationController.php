@@ -23,14 +23,7 @@ class NotificationController extends Controller
         $notifications = QrNotification::where('user_id', Auth::id())
             ->orderByDesc('created_at')
             ->get()
-            ->map(fn($n) => [
-                'id' => $n->id,
-                'message_key' => $n->message_key,
-                'message_text' => $n->message_text,
-                'is_read' => $n->is_read,
-                'read_at' => $n->read_at?->toIso8601String(),
-                'created_at' => $n->created_at->toIso8601String(),
-            ]);
+            ->map(fn($n) => $n->toOwnerArray());
 
         $unread_count = QrNotification::where('user_id', Auth::id())
             ->unread()
@@ -60,14 +53,34 @@ class NotificationController extends Controller
         }
 
         return response()->json([
-            'notification' => [
-                'id' => $notification->id,
-                'message_key' => $notification->message_key,
-                'message_text' => $notification->message_text,
-                'is_read' => true,
-                'read_at' => $notification->read_at?->toIso8601String(),
-                'created_at' => $notification->created_at->toIso8601String(),
-            ]
+            'notification' => $notification->toOwnerArray(),
+        ]);
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // POST /api/notifications/{id}/respond  { response }
+    // Le propriétaire répond au signaleur (« J'arrive », « Dans 5 min »…).
+    // Peut être modifiée (ex. : « J'arrive » puis « C'est réglé »).
+    // ─────────────────────────────────────────────────────────
+    public function respond(Request $request, int $id)
+    {
+        $request->validate([
+            'response' => ['required', 'string', 'in:' . implode(',', array_keys(QrNotification::RESPONSES))],
+        ]);
+
+        $notification = QrNotification::where('user_id', Auth::id())
+            ->findOrFail($id);
+
+        $notification->update([
+            'response_key' => $request->response,
+            'responded_at' => now(),
+            'is_read' => true,
+            'read_at' => $notification->read_at ?? now(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'notification' => $notification->toOwnerArray(),
         ]);
     }
 

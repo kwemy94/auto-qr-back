@@ -124,9 +124,28 @@ class NotificationPublicController extends Controller
         return response()->json([
             'success' => true,
             'sent' => $sent,
+            // Permet au signaleur de suivre la réponse du propriétaire
+            'report_id' => $notification->public_id,
             'message' => $sent
                 ? 'Le propriétaire a été notifié avec succès.'
                 : 'Signalement enregistré. Le propriétaire sera informé.',
         ]);
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // GET /n/report/{publicId}
+    // Statut d'un signalement pour le signaleur anonyme : vu par le
+    // propriétaire ? réponse (« J'arrive », « Dans 5 min »…) ?
+    // Interrogé périodiquement par la page de scan et l'app.
+    // ─────────────────────────────────────────────────────────
+    public function status(string $publicId)
+    {
+        $notification = QrNotification::where('public_id', $publicId)->first();
+
+        if (!$notification) {
+            return response()->json(['success' => false], 404);
+        }
+
+        return response()->json(['success' => true] + $notification->toReporterArray());
     }
 }

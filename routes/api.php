@@ -41,6 +41,8 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/notifications',          [NotificationController::class, 'index']);
     Route::get('/notifications/{id}',     [NotificationController::class, 'show']);
     Route::put('/notifications/read-all', [NotificationController::class, 'readAll']);
+    Route::post('/notifications/{id}/respond', [NotificationController::class, 'respond'])
+        ->whereNumber('id')->name('notifications.respond');
     Route::post('/notifications/test',    [NotificationController::class, 'test'])
         ->middleware('throttle:5,1')->name('notifications.test');
 
