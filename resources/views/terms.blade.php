@@ -184,8 +184,7 @@
         <section id="limites">
             <h2>4. What the service does not guarantee</h2>
             <p>Delivery of a report depends on factors outside our control: mobile network or internet access of both
-                people, the owner's phone being on, notification settings, and third-party services (such as Google
-                Firebase). We therefore <strong>cannot guarantee</strong> that every report will be delivered or read,
+                people, the owner's phone being on, notification settings, and third-party services. We therefore <strong>cannot guarantee</strong> that every report will be delivered or read,
                 nor how quickly.</p>
             <div class="highlight">
                 <p><strong>QR Notify is not an emergency service.</strong> In case of danger, accident or emergency,
@@ -285,8 +284,8 @@
         <section id="limites">
             <h2>4. Ce que le service ne garantit pas</h2>
             <p>L'acheminement d'un signalement dépend d'éléments qui ne dépendent pas de nous : réseau mobile ou accès à
-                Internet des deux personnes, téléphone du propriétaire allumé, réglages de notifications, services tiers
-                (comme Google Firebase). Nous ne pouvons donc <strong>pas garantir</strong> que chaque signalement sera
+                Internet des deux personnes, téléphone du propriétaire allumé, réglages de notifications, services tiers. 
+                Nous ne pouvons donc <strong>pas garantir</strong> que chaque signalement sera
                 reçu ou lu, ni dans quel délai.</p>
             <div class="highlight">
                 <p><strong>QR Notify n'est pas un service d'urgence.</strong> En cas de danger, d'accident ou d'urgence,

@@ -25,16 +25,14 @@ Route::get('/n/report/{publicId}', [NotificationPublicController::class, 'status
     ->name('notify.status')
     ->middleware('throttle:40,1');
 
-Route::get('/privacy-policy', function () {
-    return view('privacy_policy');
-})->name('privacy-policy');
-
-// Conditions d'utilisation (FR / EN) — ?lang=fr|en envoyé par l'app,
+// Pages légales (FR / EN) — langue : ?lang=fr|en envoyé par l'app,
 // sinon langue du navigateur, sinon français.
-Route::get('/terms', function (Request $request) {
-    $lang = in_array($request->query('lang'), ['fr', 'en'], true)
-        ? $request->query('lang')
-        : ($request->getPreferredLanguage(['fr', 'en']) ?? 'fr');
+$legalLang = fn (Request $request) => in_array($request->query('lang'), ['fr', 'en'], true)
+    ? $request->query('lang')
+    : ($request->getPreferredLanguage(['fr', 'en']) ?? 'fr');
 
-    return view('terms', ['lang' => $lang]);
-})->name('terms');
+Route::get('/privacy-policy', fn (Request $request) => view('privacy_policy', ['lang' => $legalLang($request)]))
+    ->name('privacy-policy');
+
+Route::get('/terms', fn (Request $request) => view('terms', ['lang' => $legalLang($request)]))
+    ->name('terms');

@@ -35,9 +35,40 @@ class LegalPagesTest extends TestCase
             ->assertSee('Terms of use');
     }
 
-    public function test_unknown_lang_falls_back_and_privacy_still_works(): void
+    public function test_unknown_lang_falls_back(): void
     {
         $this->get('/terms?lang=de')->assertOk();
-        $this->get('/privacy-policy')->assertOk();
+        $this->get('/privacy-policy?lang=de')->assertOk();
+    }
+
+    public function test_privacy_policy_in_both_languages(): void
+    {
+        $this->get('/privacy-policy?lang=fr')
+            ->assertOk()
+            ->assertSee('Politique de confidentialité')
+            ->assertSee('<html lang="fr">', false);
+
+        $this->get('/privacy-policy?lang=en')
+            ->assertOk()
+            ->assertSee('Privacy policy')
+            ->assertSee('<html lang="en">', false);
+    }
+
+    // Aucune technologie ni fournisseur technique ne doit apparaître sur les pages publiques
+    public function test_legal_pages_do_not_expose_technologies(): void
+    {
+        $forbidden = ['firebase', 'google', 'fcm', 'laravel', 'php', 'react', 'expo', 'sha-256',
+            'alwaysdata', 'qrserver', 'jwt', 'mysql', 'notchpay', 'campay', 'cinetpay'];
+
+        foreach (['/privacy-policy', '/terms'] as $page) {
+            foreach (['fr', 'en'] as $lang) {
+                // Texte visible uniquement (sans les balises ni le CSS)
+                $html = $this->get("{$page}?lang={$lang}")->getContent();
+                $text = strtolower(strip_tags(preg_replace('#<style.*?</style>#s', '', $html)));
+                foreach ($forbidden as $word) {
+                    $this->assertStringNotContainsString($word, $text, "« {$word} » visible sur {$page} ({$lang})");
+                }
+            }
+        }
     }
 }
