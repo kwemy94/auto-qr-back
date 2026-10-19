@@ -12,13 +12,17 @@ use Google\Auth\Credentials\ServiceAccountCredentials;
 
 class FcmService
 {
+    // Textes sans émoji : l'icône de la notification est celle de l'app
+    // (ic_notification) et l'app affiche ses propres icônes par motif.
     public const MESSAGES = [
-        'blocking' => '🚗 Votre véhicule bloque le passage. Merci de le déplacer.',
-        'urgent' => '🚨 Urgence ! Votre véhicule bloque complètement l\'accès.',
-        'lights' => '💡 Vos phares sont allumés. Pensez à les éteindre.',
-        'window' => '🪟 Une vitre de votre véhicule est ouverte.',
-        'tires' => '🔴 Un pneu de votre véhicule semble dégonflé.',
+        'blocking' => 'Votre véhicule bloque le passage. Merci de le déplacer.',
+        'urgent' => 'Urgence ! Votre véhicule bloque complètement l\'accès.',
+        'lights' => 'Vos phares sont allumés. Pensez à les éteindre.',
+        'window' => 'Une vitre de votre véhicule est ouverte.',
+        'tires' => 'Un pneu de votre véhicule semble dégonflé.',
     ];
+
+    public const TITLE = 'QR Notify';
 
     private string $projectId;
     private string $credentialsPath;
@@ -50,7 +54,7 @@ class FcmService
             return false;
         }
 
-        return $this->dispatch($fcmToken, 'QR Notify 🔔', self::MESSAGES[$messageKey], [
+        return $this->dispatch($fcmToken, self::TITLE, self::MESSAGES[$messageKey], [
             'message_key' => $messageKey,
             'notification_id' => $notificationId !== null ? (string) $notificationId : null,
         ]);

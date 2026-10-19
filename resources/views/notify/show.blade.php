@@ -262,10 +262,32 @@
             text-align: center;
         }
 
+        /* Pastille d'icône SVG (couleur selon l'état, via currentColor) */
         .status-icon {
-            font-size: 1.6rem;
-            line-height: 1;
-            margin-bottom: 0.4rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            margin-bottom: 0.5rem;
+            background: rgba(122, 146, 184, 0.15);
+            color: var(--muted);
+        }
+
+        .status.answered .status-icon {
+            background: rgba(201, 150, 42, 0.18);
+            color: var(--accent);
+        }
+
+        .status-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
         }
 
         .status-title {
@@ -538,6 +560,15 @@ $label = preg_replace('/^[\x{1F000}-\x{1FFFF}\x{2600}-\x{27FF}\x{FE00}-\x{FEFF}]
             const statusTitle = document.getElementById('status-title');
             const statusSub = document.getElementById('status-sub');
 
+            // Icônes SVG au trait (contenu fixe défini ici, jamais issu des données)
+            const ICONS = {
+                resolved: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>',
+                coming: '<svg viewBox="0 0 24 24"><circle cx="13" cy="4" r="2"/><path d="m9 20 3-6 3 3v4M6 12l3-3 4 1 2 3h3M10 9l-2 6"/></svg>',
+                minutes: '<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg>',
+                seen: '<svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+                sent: '<svg viewBox="0 0 24 24"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>',
+            };
+
             function renderStatus(s) {
                 statusBox.style.display = 'block';
                 statusBox.classList.toggle('answered', !!s.response_key);
@@ -546,23 +577,23 @@ $label = preg_replace('/^[\x{1F000}-\x{1FFFF}\x{2600}-\x{27FF}\x{FE00}-\x{FEFF}]
                     '';
 
                 if (s.response_key === 'resolved') {
-                    statusIcon.textContent = '✅';
+                    statusIcon.innerHTML = ICONS.resolved;
                     statusTitle.textContent = 'Le propriétaire indique que c\'est réglé.';
                     statusSub.textContent = time ? `Réponse à ${time}` : '';
                 } else if (s.response_key === 'coming') {
-                    statusIcon.textContent = '🏃';
+                    statusIcon.innerHTML = ICONS.coming;
                     statusTitle.textContent = 'Le propriétaire arrive !';
                     statusSub.textContent = time ? `Réponse à ${time}` : '';
                 } else if (s.response_minutes) {
-                    statusIcon.textContent = '⏱️';
+                    statusIcon.innerHTML = ICONS.minutes;
                     statusTitle.textContent = `Le propriétaire arrive dans ${s.response_minutes} minutes.`;
                     statusSub.textContent = time ? `Réponse à ${time}` : '';
                 } else if (s.is_read) {
-                    statusIcon.textContent = '👀';
+                    statusIcon.innerHTML = ICONS.seen;
                     statusTitle.textContent = 'Le propriétaire a vu votre signalement.';
                     statusSub.innerHTML = '<span class="pulse"></span>En attente de sa réponse…';
                 } else {
-                    statusIcon.textContent = '📨';
+                    statusIcon.innerHTML = ICONS.sent;
                     statusTitle.textContent = 'Signalement transmis.';
                     statusSub.innerHTML = '<span class="pulse"></span>En attente que le propriétaire le voie…';
                 }

@@ -210,7 +210,29 @@
             text-align: center;
         }
 
-        .feature-icon { font-size: 1.3rem; margin-bottom: 0.4rem; }
+        /* Icônes SVG au trait (couleur héritée via currentColor) */
+        .feature-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: rgba(201, 150, 42, 0.12);
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        .feature-icon svg,
+        .btn svg {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            flex-shrink: 0;
+        }
         .feature-title { font-size: 0.78rem; font-weight: 600; margin-bottom: 0.2rem; }
         .feature-desc { font-size: 0.7rem; color: var(--muted); line-height: 1.4; }
 
@@ -287,7 +309,9 @@
             <h2>Vous avez un véhicule ?</h2>
             <p>Téléchargez l'application, générez votre QR code et collez-le sur votre pare-brise.</p>
             <a href="https://play.google.com/store/apps/details?id=com.shell_grant.qrautofront" class="btn btn-primary" target="_blank" rel="noopener">
-                📱 Télécharger sur Google Play
+                {{-- Icône : téléchargement --}}
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+                Télécharger sur Google Play
             </a>
             {{-- <a href="#" class="btn btn-secondary">
                 J'ai déjà un compte
@@ -297,22 +321,34 @@
         {{-- ── Features ── --}}
         <div class="features">
             <div class="feature">
-                <div class="feature-icon">🔒</div>
+                <div class="feature-icon" aria-hidden="true">
+                    {{-- Cadenas --}}
+                    <svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                </div>
                 <div class="feature-title">Anonymat total</div>
                 <div class="feature-desc">Aucune donnée personnelle échangée entre les parties</div>
             </div>
             <div class="feature">
-                <div class="feature-icon">⚡</div>
+                <div class="feature-icon" aria-hidden="true">
+                    {{-- Éclair --}}
+                    <svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>
+                </div>
                 <div class="feature-title">Instantané</div>
                 <div class="feature-desc">Notification reçue en moins de 3 secondes</div>
             </div>
             <div class="feature">
-                <div class="feature-icon">📵</div>
+                <div class="feature-icon" aria-hidden="true">
+                    {{-- Appareil photo (le signalant scanne simplement le code) --}}
+                    <svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></svg>
+                </div>
                 <div class="feature-title">Sans app pour signaler</div>
                 <div class="feature-desc">Le signalant utilise juste son appareil photo</div>
             </div>
             <div class="feature">
-                <div class="feature-icon">🇨🇲</div>
+                <div class="feature-icon" aria-hidden="true">
+                    {{-- Repère de localisation --}}
+                    <svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                </div>
                 <div class="feature-title">Pensé pour Bertoua</div>
                 <div class="feature-desc">Conçu pour le corridor Cameroun – RCA – Tchad</div>
             </div>
