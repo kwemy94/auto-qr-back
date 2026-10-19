@@ -19,7 +19,12 @@ class SubscriptionTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        config(['payments.driver' => 'fake', 'payments.fake_confirm_after' => 0]);
+        // Valeurs fixées ici : les tests ne dépendent pas du .env local
+        config([
+            'payments.driver' => 'fake',
+            'payments.fake_confirm_after' => 0,
+            'payments.allow_fake_in_production' => false,
+        ]);
     }
 
     private function headers(User $user): array

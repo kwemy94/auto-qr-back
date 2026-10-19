@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\NotificationPublicController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -27,3 +28,13 @@ Route::get('/n/report/{publicId}', [NotificationPublicController::class, 'status
 Route::get('/privacy-policy', function () {
     return view('privacy_policy');
 })->name('privacy-policy');
+
+// Conditions d'utilisation (FR / EN) — ?lang=fr|en envoyé par l'app,
+// sinon langue du navigateur, sinon français.
+Route::get('/terms', function (Request $request) {
+    $lang = in_array($request->query('lang'), ['fr', 'en'], true)
+        ? $request->query('lang')
+        : ($request->getPreferredLanguage(['fr', 'en']) ?? 'fr');
+
+    return view('terms', ['lang' => $lang]);
+})->name('terms');
