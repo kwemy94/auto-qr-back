@@ -4,13 +4,15 @@
      Charte QR Notify : #0d1f3c | #c9962a | #f0e8d5
      ============================================================ --}}
 <!DOCTYPE html>
-<html lang="fr">
+{{-- Route inconnue : le middleware web n'a pas tourné, on résout la langue ici --}}
+@php(app()->setLocale(\App\Http\Middleware\SetWebLocale::resolve(request())))
+<html lang="{{ app()->getLocale() }}">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title>QR Notify — Page introuvable</title>
+    <title>{{ __('web.not_found.title') }}</title>
     <style>
         *,
         *::before,
@@ -278,6 +280,7 @@
 </head>
 
 <body>
+    <div style="width: 100%; max-width: 360px; margin-bottom: -1rem;">@include('partials.lang-switch')</div>
 
     {{-- ── Logo ──────────────────────────────────────────────────── --}}
     <div style="display:flex;flex-direction:column;align-items:center;">
@@ -299,11 +302,10 @@
     <div class="content">
         {{-- <div class="badge-error">QR code non actif</div> --}}
         <h1 class="headline">
-            {{  'Ce QR code est invalide ou désactivé.' }}
+            {{ __('web.not_found.headline') }}
         </h1>
         <p class="sub">
-            Le propriétaire de ce véhicule n'a pas encore configuré<br>
-            son compte QR Notify ou ses notifications sont désactivées.
+            {!! __('web.not_found.sub') !!}
         </p>
     </div>
 
@@ -312,10 +314,9 @@
     {{-- ── Card téléchargement ────────────────────────────────────── --}}
     <div class="card">
         <div>
-            <div class="card-title">Vous avez un véhicule ?</div>
+            <div class="card-title">{{ __('web.not_found.card_title') }}</div>
             <p class="card-desc">
-                Téléchargez QR Notify, générez votre QR code et collez-le sur votre pare-brise.
-                En cas de blocage, vous serez alerté instantanément.
+                {{ __('web.not_found.card_text') }}
             </p>
         </div>
 
@@ -329,7 +330,7 @@
                         d="M3.18 23.76c.3.17.64.24.99.21l13.08-11.77L13.48 8.4zM.5 1.4A1.5 1.5 0 0 0 0 2.5v19a1.5 1.5 0 0 0 .5 1.1l.1.08L14.1 12v-.31L.6 1.32zM22.28 10.3l-2.8-1.6-3.18 2.86 3.18 2.86 2.82-1.6a1.6 1.6 0 0 0 0-2.52zM4.17.24L17.25 12 13.48 15.6 4.17.24z" />
                 </svg>
                 <div class="store-btn-text">
-                    <span class="store-label">Disponible sur</span>
+                    <span class="store-label">{{ __('web.not_found.available_on') }}</span>
                     <span class="store-name">Google Play</span>
                 </div>
                 <span class="store-arrow">›</span>
@@ -342,7 +343,7 @@
                         d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
                 </svg>
                 <div class="store-btn-text">
-                    <span class="store-label">Disponible sur</span>
+                    <span class="store-label">{{ __('web.not_found.available_on') }}</span>
                     <span class="store-name">App Store</span>
                 </div>
                 <span class="store-arrow">›</span>
@@ -353,21 +354,21 @@
         <div class="steps">
             <div class="step">
                 <div class="step-num">1</div>
-                <div class="step-text"><strong>Téléchargez</strong> l'application QR Notify</div>
+                <div class="step-text">{!! __('web.not_found.step1') !!}</div>
             </div>
             <div class="step">
                 <div class="step-num">2</div>
-                <div class="step-text"><strong>Créez votre compte</strong> et générez votre QR code</div>
+                <div class="step-text">{!! __('web.not_found.step2') !!}</div>
             </div>
             <div class="step">
                 <div class="step-num">3</div>
-                <div class="step-text"><strong>Collez le QR code</strong> sur votre pare-brise</div>
+                <div class="step-text">{!! __('web.not_found.step3') !!}</div>
             </div>
         </div>
     </div>
 
     <footer class="footer">
-        QR Notify &mdash; Application de signalement anonyme de véhicules<br>
+        {{ __('web.footer_line') }}<br>
         &copy; StreetSmart &mdash; {{ date('Y') }}
     </footer>
 

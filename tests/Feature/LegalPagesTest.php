@@ -6,17 +6,11 @@ use Tests\TestCase;
 
 class LegalPagesTest extends TestCase
 {
-    // (Le client de test Symfony envoie « Accept-Language: en-us » par défaut :
-    // le français est donc demandé explicitement.)
     public function test_terms_page_in_french(): void
     {
         $this->get('/terms?lang=fr')
             ->assertOk()
             ->assertSee("Conditions d'utilisation") // échappé comme Blade (&#039;)
-            ->assertSee('<html lang="fr">', false);
-
-        $this->get('/terms', ['Accept-Language' => 'fr-FR,fr;q=0.9'])
-            ->assertOk()
             ->assertSee('<html lang="fr">', false);
     }
 
@@ -28,9 +22,10 @@ class LegalPagesTest extends TestCase
             ->assertSee('<html lang="en">', false);
     }
 
-    public function test_terms_page_follows_browser_language(): void
+    // Anglais par défaut, quelle que soit la langue du navigateur
+    public function test_terms_page_defaults_to_english(): void
     {
-        $this->get('/terms', ['Accept-Language' => 'en-US,en;q=0.9'])
+        $this->get('/terms', ['Accept-Language' => 'fr-FR,fr;q=0.9'])
             ->assertOk()
             ->assertSee('Terms of use');
     }

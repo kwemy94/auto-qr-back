@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\NotificationPublicController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -25,14 +24,10 @@ Route::get('/n/report/{publicId}', [NotificationPublicController::class, 'status
     ->name('notify.status')
     ->middleware('throttle:40,1');
 
-// Pages légales (FR / EN) — langue : ?lang=fr|en envoyé par l'app,
-// sinon langue du navigateur, sinon français.
-$legalLang = fn (Request $request) => in_array($request->query('lang'), ['fr', 'en'], true)
-    ? $request->query('lang')
-    : ($request->getPreferredLanguage(['fr', 'en']) ?? 'fr');
-
-Route::get('/privacy-policy', fn (Request $request) => view('privacy_policy', ['lang' => $legalLang($request)]))
+// Pages légales (FR / EN) — langue fixée par SetWebLocale :
+// ?lang=fr|en (envoyé par l'app), sinon choix mémorisé, sinon anglais.
+Route::get('/privacy-policy', fn () => view('privacy_policy', ['lang' => app()->getLocale()]))
     ->name('privacy-policy');
 
-Route::get('/terms', fn (Request $request) => view('terms', ['lang' => $legalLang($request)]))
+Route::get('/terms', fn () => view('terms', ['lang' => app()->getLocale()]))
     ->name('terms');

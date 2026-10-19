@@ -87,7 +87,7 @@ class NotificationPublicController extends Controller
         if ($recentCount >= 3) {
             return response()->json([
                 'success' => false,
-                'message' => 'Vous avez déjà signalé ce véhicule récemment. Merci de patienter.',
+                'message' => __('web.notify.too_many'),
             ], 429);
         }
 
@@ -135,8 +135,8 @@ class NotificationPublicController extends Controller
             // Permet au signaleur de suivre la réponse du propriétaire
             'report_id' => $notification->public_id,
             'message' => $sent
-                ? 'Le propriétaire a été notifié avec succès.'
-                : 'Signalement enregistré. Le propriétaire sera informé.',
+                ? __('web.notify.owner_notified')
+                : __('web.notify.recorded'),
         ]);
     }
 

@@ -5,12 +5,12 @@
      Charte : #0d1f3c | #c9962a | #f0e8d5
      ============================================================ --}}
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Notify — Signalement anonyme, notification instantanée</title>
-    <meta name="description" content="Un QR code sur votre pare-brise. Une notification instantanée en cas de blocage. Sans confrontation, sans application pour signaler.">
+    <title>{{ __('web.welcome.title') }}</title>
+    <meta name="description" content="{{ __('web.welcome.meta') }}">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -256,6 +256,8 @@
 
     <div class="container">
 
+        @include('partials.lang-switch')
+
         {{-- ── Header ── --}}
         <div class="header">
             <div class="logo-wrap">
@@ -270,13 +272,13 @@
                 </svg>
             </div>
             <div class="brand">QR Notify</div>
-            <div class="tagline">Signalement anonyme. Notification instantanée.</div>
+            <div class="tagline">{{ __('web.welcome.tagline') }}</div>
         </div>
 
         {{-- ── Hero ── --}}
         <div class="hero">
-            <h1>Un véhicule vous <span>bloque</span> ?<br>Prévenez sans confrontation.</h1>
-            <p>Scannez le QR code sur le pare-brise. Le propriétaire reçoit une notification en moins de 3 secondes — sans connaître votre identité.</p>
+            <h1>{{ __('web.welcome.hero_before') }} <span>{{ __('web.welcome.hero_accent') }}</span> {{ __('web.welcome.hero_after') }}<br>{{ __('web.welcome.hero_line2') }}</h1>
+            <p>{{ __('web.welcome.hero_text') }}</p>
         </div>
 
         {{-- ── Steps ── --}}
@@ -284,34 +286,34 @@
             <div class="step">
                 <div class="step-num">1</div>
                 <div class="step-text">
-                    <strong>Scannez le QR code</strong>
-                    <span>Avec la caméra native de votre téléphone — aucune app requise</span>
+                    <strong>{{ __('web.welcome.step1_title') }}</strong>
+                    <span>{{ __('web.welcome.step1_text') }}</span>
                 </div>
             </div>
             <div class="step">
                 <div class="step-num">2</div>
                 <div class="step-text">
-                    <strong>Choisissez un message</strong>
-                    <span>Véhicule bloquant, phares allumés, vitre ouverte...</span>
+                    <strong>{{ __('web.welcome.step2_title') }}</strong>
+                    <span>{{ __('web.welcome.step2_text') }}</span>
                 </div>
             </div>
             <div class="step">
                 <div class="step-num">3</div>
                 <div class="step-text">
-                    <strong>Le propriétaire est notifié</strong>
-                    <span>Notification push instantanée, totalement anonyme</span>
+                    <strong>{{ __('web.welcome.step3_title') }}</strong>
+                    <span>{{ __('web.welcome.step3_text') }}</span>
                 </div>
             </div>
         </div>
 
         {{-- ── CTA — Propriétaires ── --}}
         <div class="cta-card">
-            <h2>Vous avez un véhicule ?</h2>
-            <p>Téléchargez l'application, générez votre QR code et collez-le sur votre pare-brise.</p>
+            <h2>{{ __('web.welcome.cta_title') }}</h2>
+            <p>{{ __('web.welcome.cta_text') }}</p>
             <a href="https://play.google.com/store/apps/details?id=com.shell_grant.qrautofront" class="btn btn-primary" target="_blank" rel="noopener">
                 {{-- Icône : téléchargement --}}
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-                Télécharger sur Google Play
+                {{ __('web.welcome.cta_button') }}
             </a>
             {{-- <a href="#" class="btn btn-secondary">
                 J'ai déjà un compte
@@ -325,38 +327,38 @@
                     {{-- Cadenas --}}
                     <svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
                 </div>
-                <div class="feature-title">Anonymat total</div>
-                <div class="feature-desc">Aucune donnée personnelle échangée entre les parties</div>
+                <div class="feature-title">{{ __('web.welcome.f1_title') }}</div>
+                <div class="feature-desc">{{ __('web.welcome.f1_text') }}</div>
             </div>
             <div class="feature">
                 <div class="feature-icon" aria-hidden="true">
                     {{-- Éclair --}}
                     <svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>
                 </div>
-                <div class="feature-title">Instantané</div>
-                <div class="feature-desc">Notification reçue en moins de 3 secondes</div>
+                <div class="feature-title">{{ __('web.welcome.f2_title') }}</div>
+                <div class="feature-desc">{{ __('web.welcome.f2_text') }}</div>
             </div>
             <div class="feature">
                 <div class="feature-icon" aria-hidden="true">
                     {{-- Appareil photo (le signalant scanne simplement le code) --}}
                     <svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></svg>
                 </div>
-                <div class="feature-title">Sans app pour signaler</div>
-                <div class="feature-desc">Le signalant utilise juste son appareil photo</div>
+                <div class="feature-title">{{ __('web.welcome.f3_title') }}</div>
+                <div class="feature-desc">{{ __('web.welcome.f3_text') }}</div>
             </div>
             <div class="feature">
                 <div class="feature-icon" aria-hidden="true">
                     {{-- Repère de localisation --}}
                     <svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
                 </div>
-                <div class="feature-title">Pensé pour Bertoua</div>
-                <div class="feature-desc">Conçu pour le corridor Cameroun – RCA – Tchad</div>
+                <div class="feature-title">{{ __('web.welcome.f4_title') }}</div>
+                <div class="feature-desc">{{ __('web.welcome.f4_text') }}</div>
             </div>
         </div>
 
         {{-- ── Footer ── --}}
         <footer class="footer">
-            QR Notify &mdash; Application de signalement anonyme de véhicules<br>
+            {{ __('web.footer_line') }}<br>
             &copy; StreetSmart &mdash; {{ date('Y') }}
         </footer>
 

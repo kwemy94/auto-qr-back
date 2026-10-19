@@ -1,7 +1,7 @@
 {{-- ============================================================
      resources/views/terms.blade.php
      Conditions d'utilisation — QR Notify (FR / EN)
-     Langue : ?lang=fr|en (envoyée par l'app), sinon celle du navigateur.
+     Langue : ?lang=fr|en (envoyée par l'app), sinon choix mémorisé, sinon anglais.
      Charte : #0d1f3c | #c9962a | #f0e8d5
      ⚠ Texte à faire valider par un juriste avant publication définitive.
      ============================================================ --}}
@@ -31,13 +31,6 @@
         html { font-size: 16px; scroll-behavior: smooth; }
         body { background: var(--bg); color: var(--text); font-family: var(--font); line-height: 1.7; }
         .container { max-width: 760px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
-
-        .lang-switch { display: flex; justify-content: flex-end; gap: 0.4rem; margin-bottom: 1rem; }
-        .lang-switch a {
-            color: var(--muted); text-decoration: none; font-size: 0.8rem; font-weight: 700;
-            letter-spacing: 0.06em; padding: 0.3rem 0.7rem; border-radius: 999px; border: 1px solid var(--border);
-        }
-        .lang-switch a.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
 
         .header { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; margin-bottom: 2.5rem; text-align: center; }
         .logo-wrap {
@@ -90,10 +83,7 @@
 <body>
     <div class="container">
 
-        <nav class="lang-switch" aria-label="{{ $en ? 'Language' : 'Langue' }}">
-            <a href="?lang=fr" class="{{ $en ? '' : 'active' }}" @if(!$en) aria-current="page" @endif>FR</a>
-            <a href="?lang=en" class="{{ $en ? 'active' : '' }}" @if($en) aria-current="page" @endif>EN</a>
-        </nav>
+        @include('partials.lang-switch')
 
         <div class="header">
             <div class="logo-wrap" aria-hidden="true">

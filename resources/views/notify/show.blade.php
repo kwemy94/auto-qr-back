@@ -4,13 +4,13 @@
      Bleu marine #0d1f3c | Or #c9962a | Crème #f0e8d5
      ============================================================ --}}
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ app()->getLocale() }}">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title>Signaler ce véhicule — QR Notify</title>
+    <title>{{ __('web.notify.title') }}</title>
     <style>
         /* ── Reset & Base ──────────────────────────────────────── */
         *,
@@ -412,6 +412,10 @@
 
 <body>
 
+    <div style="width: 100%; max-width: 420px;">
+        @include('partials.lang-switch')
+    </div>
+
     {{-- ── Header ─────────────────────────────────────────────── --}}
     <div class="header">
         <div class="logo-wrap" aria-hidden="true">
@@ -427,31 +431,27 @@
             </svg>
         </div>
         <div class="app-name">QR Notify</div>
-        <h1 class="headline">Ce véhicule vous bloque ?</h1>
-        <p class="sub">Choisissez un message — le propriétaire<br>sera notifié instantanément.</p>
+        <h1 class="headline">{{ __('web.notify.headline') }}</h1>
+        <p class="sub">{!! __('web.notify.sub') !!}</p>
         <div class="divider"></div>
     </div>
 
     {{-- ── Card de signalement ──────────────────────────────────── --}}
     <div class="card" role="main">
-        <p class="card-label">Quel est le problème ?</p>
+        <p class="card-label">{{ __('web.notify.question') }}</p>
 
-        <div class="msg-list" role="group" aria-label="Choisir un message de signalement">
-            @foreach ($messages as $key => $text)
-                @php
-                    // Supprime l'emoji en début de chaîne (unicode étendu)
-$label = preg_replace('/^[\x{1F000}-\x{1FFFF}\x{2600}-\x{27FF}\x{FE00}-\x{FEFF}]+\s*/u', '', $text);
-                @endphp
+        <div class="msg-list" role="group" aria-label="{{ __('web.notify.group_label') }}">
+            @foreach (array_keys($messages) as $key)
                 <button type="button" class="msg-btn" data-key="{{ $key }}" aria-pressed="false">
                     <span class="indicator" aria-hidden="true"></span>
-                    <span>{{ $label }}</span>
+                    <span>{{ __('web.notify.messages.' . $key) }}</span>
                 </button>
             @endforeach
         </div>
 
         <div class="send-wrap">
             <button id="btn-send" class="btn-send" type="button" disabled aria-live="polite">
-                Envoyer le signalement
+                {{ __('web.notify.send') }}
             </button>
         </div>
 
@@ -471,19 +471,22 @@ $label = preg_replace('/^[\x{1F000}-\x{1FFFF}\x{2600}-\x{27FF}\x{FE00}-\x{FEFF}]
             <rect x="5" y="11" width="14" height="10" rx="2" />
             <path d="M8 11V7a4 4 0 0 1 8 0v4" />
         </svg>
-        <strong>Votre anonymat est garanti.</strong><br>
-        Aucune donnée personnelle n'est transmise au propriétaire.
+        <strong>{{ __('web.notify.anon_title') }}</strong><br>
+        {{ __('web.notify.anon_text') }}
     </p>
 
     <footer class="footer">
-        <span>QR Notify</span> &mdash; Signalement anonyme &amp; instantané
+        <span>QR Notify</span> &mdash; {!! __('web.notify.footer') !!}
     </footer>
 
     {{-- ── Script (vanilla JS, ~1 Ko) ────────────────────────────── --}}
     <script>
         (function() {
             const TOKEN = @json($token);
-            const SEND_URL = `/n/${TOKEN}/send`;
+            const T = @json(__('web.notify.js'));
+            const TIME_LOCALE = @json(app()->getLocale() === 'fr' ? 'fr-FR' : 'en-GB');
+            const fmt = (str, vars) => str.replace(/:(\w+)/g, (m, k) => (k in vars ? vars[k] : m));
+            const SEND_URL = `/n/${TOKEN}/send?lang=${@json(app()->getLocale())}`;
             const CSRF = document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] ?
                 decodeURIComponent(document.cookie.match(/XSRF-TOKEN=([^;]+)/)[1]) :
                 '';
@@ -533,21 +536,21 @@ $label = preg_replace('/^[\x{1F000}-\x{1FFFF}\x{2600}-\x{27FF}\x{FE00}-\x{FEFF}]
                     const data = await res.json();
 
                     if (res.ok && data.success) {
-                        showFeedback('success', 'Signalement envoyé. Le propriétaire a été notifié.');
+                        showFeedback('success', T.sent_ok);
                         msgBtns.forEach(b => {
                             b.disabled = true;
                             b.classList.remove('selected');
                         });
                         sent = true;
                         btnSend.disabled = true;
-                        btnSend.textContent = 'Signalement envoyé';
+                        btnSend.textContent = T.sent_button;
                         if (data.report_id) startTracking(data.report_id);
                     } else {
-                        showFeedback('error', data.message ?? 'Une erreur est survenue. Réessayez.');
+                        showFeedback('error', data.message ?? T.error);
                         setLoading(false);
                     }
                 } catch (e) {
-                    showFeedback('error', 'Connexion impossible. Vérifiez votre réseau.');
+                    showFeedback('error', T.network);
                     setLoading(false);
                 }
             });
@@ -573,30 +576,37 @@ $label = preg_replace('/^[\x{1F000}-\x{1FFFF}\x{2600}-\x{27FF}\x{FE00}-\x{FEFF}]
                 statusBox.style.display = 'block';
                 statusBox.classList.toggle('answered', !!s.response_key);
                 const time = s.responded_at ?
-                    new Date(s.responded_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) :
+                    new Date(s.responded_at).toLocaleTimeString(TIME_LOCALE, { hour: '2-digit', minute: '2-digit' }) :
                     '';
+                const repliedAt = time ? fmt(T.replied_at, { time }) : '';
 
                 if (s.response_key === 'resolved') {
                     statusIcon.innerHTML = ICONS.resolved;
-                    statusTitle.textContent = 'Le propriétaire indique que c\'est réglé.';
-                    statusSub.textContent = time ? `Réponse à ${time}` : '';
+                    statusTitle.textContent = T.resolved;
+                    statusSub.textContent = repliedAt;
                 } else if (s.response_key === 'coming') {
                     statusIcon.innerHTML = ICONS.coming;
-                    statusTitle.textContent = 'Le propriétaire arrive !';
-                    statusSub.textContent = time ? `Réponse à ${time}` : '';
+                    statusTitle.textContent = T.coming;
+                    statusSub.textContent = repliedAt;
                 } else if (s.response_minutes) {
                     statusIcon.innerHTML = ICONS.minutes;
-                    statusTitle.textContent = `Le propriétaire arrive dans ${s.response_minutes} minutes.`;
-                    statusSub.textContent = time ? `Réponse à ${time}` : '';
+                    statusTitle.textContent = fmt(T.minutes, { minutes: s.response_minutes });
+                    statusSub.textContent = repliedAt;
                 } else if (s.is_read) {
                     statusIcon.innerHTML = ICONS.seen;
-                    statusTitle.textContent = 'Le propriétaire a vu votre signalement.';
-                    statusSub.innerHTML = '<span class="pulse"></span>En attente de sa réponse…';
+                    statusTitle.textContent = T.seen;
+                    setWaiting(T.waiting_reply);
                 } else {
                     statusIcon.innerHTML = ICONS.sent;
-                    statusTitle.textContent = 'Signalement transmis.';
-                    statusSub.innerHTML = '<span class="pulse"></span>En attente que le propriétaire le voie…';
+                    statusTitle.textContent = T.transmitted;
+                    setWaiting(T.waiting_seen);
                 }
+            }
+
+            // Ligne d'attente avec pastille animée (texte inséré sans HTML)
+            function setWaiting(text) {
+                statusSub.innerHTML = '<span class="pulse"></span>';
+                statusSub.append(text);
             }
 
             function startTracking(reportId) {
@@ -619,7 +629,7 @@ $label = preg_replace('/^[\x{1F000}-\x{1FFFF}\x{2600}-\x{27FF}\x{FE00}-\x{FEFF}]
                     if (Date.now() - startedAt < POLL_MAX_MS) {
                         setTimeout(poll, POLL_MS);
                     } else {
-                        statusSub.textContent = 'Suivi arrêté. Rechargez la page pour un nouveau signalement.';
+                        statusSub.textContent = T.stopped;
                     }
                 };
                 setTimeout(poll, POLL_MS);
@@ -629,9 +639,10 @@ $label = preg_replace('/^[\x{1F000}-\x{1FFFF}\x{2600}-\x{27FF}\x{FE00}-\x{FEFF}]
             function setLoading(on) {
                 if (on) {
                     btnSend.disabled = true;
-                    btnSend.innerHTML = '<span class="spinner"></span>Envoi en cours…';
+                    btnSend.innerHTML = '<span class="spinner"></span>';
+                    btnSend.append(T.sending);
                 } else if (!sent) {
-                    btnSend.innerHTML = 'Envoyer le signalement';
+                    btnSend.textContent = @json(__('web.notify.send'));
                     if (selectedKey) btnSend.disabled = false;
                 }
             }
